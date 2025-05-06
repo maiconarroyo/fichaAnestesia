@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulário do Paciente</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      padding: 10px 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ficha Pré-Anestésica - Paciente</h1>
+
+  <form id="pacienteForm">
+    <div class="form-group">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" required />
+    </div>
+
+    <div class="form-group">
+      <label for="idade">Idade:</label>
+      <input type="number" id="idade" name="idade" required />
+    </div>
+
+    <div class="form-group">
+      <label for="peso">Peso (kg):</label>
+      <input type="number" id="peso" name="peso" required />
+    </div>
+
+    <div class="form-group">
+      <label for="altura">Altura (cm):</label>
+      <input type="number" id="altura" name="altura" required />
+    </div>
+
+    <div class="form-group">
+      <label>Possui problema de saúde?</label>
+      <select id="problemaSaudeSelect">
+        <option value="nao">Não</option>
+        <option value="sim">Sim</option>
+      </select>
+      <input type="text" id="problemaSaude" placeholder="Quais?" class="hidden" />
+    </div>
+
+    <div class="form-group">
+      <label>Possui alergia?</label>
+      <select id="alergiaSelect">
+        <option value="nao">Não</option>
+        <option value="sim">Sim</option>
+      </select>
+      <input type="text" id="alergia" placeholder="Qual?" class="hidden" />
+    </div>
+
+    <div class="form-group">
+      <label>Antecedente cirúrgico?</label>
+      <select id="cirurgiaSelect">
+        <option value="nao">Não</option>
+        <option value="sim">Sim</option>
+      </select>
+      <input type="text" id="cirurgias" placeholder="Quais?" class="hidden" />
+    </div>
+
+    <div class="form-group">
+      <label for="cirurgiao">Cirurgião responsável:</label>
+      <input type="text" id="cirurgiao" name="cirurgiao" required />
+    </div>
+
+    <div class="form-group">
+      <label for="cirurgia">Cirurgia que irá realizar:</label>
+      <input type="text" id="cirurgia" name="cirurgia" required />
+    </div>
+
+    <button type="submit">Enviar para Anestesista</button>
+  </form>
+
+  <script>
+    // Exibição condicional
+    const problemaSaudeSelect = document.getElementById('problemaSaudeSelect');
+    const problemaSaudeInput = document.getElementById('problemaSaude');
+
+    const alergiaSelect = document.getElementById('alergiaSelect');
+    const alergiaInput = document.getElementById('alergia');
+
+    const cirurgiaSelect = document.getElementById('cirurgiaSelect');
+    const cirurgiaInput = document.getElementById('cirurgias');
+
+    problemaSaudeSelect.addEventListener('change', () => {
+      problemaSaudeInput.classList.toggle('hidden', problemaSaudeSelect.value === 'nao');
+    });
+
+    alergiaSelect.addEventListener('change', () => {
+      alergiaInput.classList.toggle('hidden', alergiaSelect.value === 'nao');
+    });
+
+    cirurgiaSelect.addEventListener('change', () => {
+      cirurgiaInput.classList.toggle('hidden', cirurgiaSelect.value === 'nao');
+    });
+
+    // Envio para o backend
+    document.getElementById('pacienteForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const data = {
+        nome: document.getElementById('nome').value,
+        idade: parseInt(document.getElementById('idade').value),
+        peso: parseFloat(document.getElementById('peso').value),
+        altura: parseFloat(document.getElementById('altura').value),
+        problemaSaude: problemaSaudeSelect.value === 'sim' ? problemaSaudeInput.value : 'Não',
+        alergia: alergiaSelect.value === 'sim' ? alergiaInput.value : 'Não',
+        cirurgias: cirurgiaSelect.value === 'sim' ? cirurgiaInput.value : 'Não',
+        cirurgiao: document.getElementById('cirurgiao').value,
+        cirurgia: document.getElementById('cirurgia').value
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/api/salvar-paciente', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          alert('Dados enviados com sucesso para o anestesista!');
+          document.getElementById('pacienteForm').reset();
+        } else {
+          alert('Erro ao enviar os dados.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erro na comunicação com o servidor.');
+      }
+    });
+  </script>
+</body>
+</html>
